@@ -144,7 +144,7 @@ const GA_ID = "G-FCVLF370Z7";
 window.dataLayer=window.dataLayer||[]; function gtag(){dataLayer.push(arguments)}
 if(GA_ID){
   const s=document.createElement("script"); s.async=true; s.src="https://www.googletagmanager.com/gtag/js?id="+GA_ID; document.head.appendChild(s);
-  gtag("js",new Date()); gtag("config",GA_ID);
+  gtag("js",new Date()); gtag("config",GA_ID,/[?&]debug\b/.test(location.search)?{debug_mode:true}:{});
 }
 </script>
 </head>
@@ -273,6 +273,11 @@ const FLAVOURS = [
 
 const $=s=>document.querySelector(s);
 const qty=Object.fromEntries(FLAVOURS.map(f=>[f.id,0]));
+/* ===== Analytics events (Google Analytics 4) ===== */
+const track=(name,params={})=>gtag("event",name,{transport_type:"beacon",...params});
+const item=(f,q)=>({item_id:f.id,item_name:f.name,price:f.price,quantity:q});
+const cart=()=>{const items=FLAVOURS.filter(f=>qty[f.id]).map(f=>item(f,qty[f.id]));
+  return {currency:"INR",value:items.reduce((t,i)=>t+i.price*i.quantity,0),packs:items.reduce((t,i)=>t+i.quantity,0),items}};
 const spots=[[22,22],[58,26],[36,52],[66,62],[24,68]];
 const grid=$("#grid");
 FLAVOURS.forEach(f=>{
@@ -284,22 +289,30 @@ FLAVOURS.forEach(f=>{
     <span class="step zero" id="s-${f.id}"><button class="minus" type="button" aria-label="Remove one ${f.name}">−</button><output>0</output><button class="plus" type="button" aria-label="Add one ${f.name} pack">+</button></span></div>`;
   el.querySelector("h3").textContent=f.name; el.querySelector(".d").textContent=f.d+" · 250 g";
   el.querySelector(".plus").onclick=()=>{qty[f.id]=Math.min(20,qty[f.id]+1);render();
-    gtag("event","add_to_cart",{currency:"INR",value:f.price,items:[{item_id:f.id,item_name:f.name,price:f.price,quantity:1}]})};
-  el.querySelector(".minus").onclick=()=>{qty[f.id]=Math.max(0,qty[f.id]-1);render()};
+    track("add_to_cart",{currency:"INR",value:f.price,items:[item(f,1)]})};
+  el.querySelector(".minus").onclick=()=>{if(!qty[f.id])return; qty[f.id]--;render();
+    track("remove_from_cart",{currency:"INR",value:f.price,items:[item(f,1)]})};
   grid.appendChild(el);
 });
 const t=new Date(); t.setDate(t.getDate()+1); $("#dt").min=t.toISOString().slice(0,10);
-document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener("change",render));
+document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener("change",()=>{render(); track("select_delivery_mode",{mode:mode()})}));
+let startedForm=false;
+["#nm","#ph","#ad","#dt","#nt"].forEach(s=>$(s).addEventListener("focus",()=>{if(!startedForm){startedForm=true; track("begin_checkout",cart())}}));
 ["#nm","#ph","#ad","#dt","#nt"].forEach(s=>$(s).addEventListener("input",render));
 $("#waFoot").href=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Pushti Rasoi! I'd like to know more about your cookies.")}`;
 document.querySelector('a[href="#pickup"].btn').addEventListener("click",()=>{$("#pd").open=true});
+$("#pd").addEventListener("toggle",()=>{if($("#pd").open) track("view_pickup_details")});
+document.querySelectorAll(".hero .btn, #bar .btn").forEach(a=>a.addEventListener("click",()=>
+  track("cta_click",{cta:(a.closest("#bar")?"sticky_bar":"hero")+"_"+a.getAttribute("href").slice(1)})));
+document.querySelectorAll("nav a, a.brand").forEach(a=>a.addEventListener("click",()=>
+  track("nav_click",{section:a.getAttribute("href").slice(1)})));
 
 const mode=()=>document.querySelector('input[name=mode]:checked').value;
 function problem(){
-  if(!Object.values(qty).some(Boolean)) return "Add at least one pack from the menu above.";
-  if(!$("#nm").value.trim()) return "Add your name.";
-  if($("#ph").value.replace(/\D/g,"").length<10) return "Add a 10-digit phone number.";
-  if(mode()==="Home delivery"&&!$("#ad").value.trim()) return "Add your delivery address.";
+  if(!Object.values(qty).some(Boolean)) return {code:"no_items",msg:"Add at least one pack from the menu above."};
+  if(!$("#nm").value.trim()) return {code:"no_name",msg:"Add your name."};
+  if($("#ph").value.replace(/\D/g,"").length<10) return {code:"bad_phone",msg:"Add a 10-digit phone number."};
+  if(mode()==="Home delivery"&&!$("#ad").value.trim()) return {code:"no_address",msg:"Add your delivery address."};
   return "";
 }
 function message(){
@@ -326,11 +339,17 @@ function render(){
   $("#send").href = p ? "#" : `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message())}`;
   $("#err").textContent="";
 }
-$("#send").addEventListener("click",e=>{const p=problem(); if(p){e.preventDefault(); $("#err").textContent=p; return;}
-  const items=FLAVOURS.filter(f=>qty[f.id]).map(f=>({item_id:f.id,item_name:f.name,price:f.price,quantity:qty[f.id]}));
-  gtag("event","generate_lead",{currency:"INR",value:items.reduce((t,i)=>t+i.price*i.quantity,0),delivery:mode(),items,transport_type:"beacon"});
+$("#send").addEventListener("click",e=>{const p=problem();
+  if(p){e.preventDefault(); $("#err").textContent=p.msg; track("preorder_blocked",{reason:p.code}); return;}
+  track("preorder_whatsapp_click",{...cart(),mode:mode(),has_date:!!$("#dt").value,has_notes:!!$("#nt").value.trim()});
 });
-$("#waFoot").addEventListener("click",()=>gtag("event","contact",{method:"whatsapp",transport_type:"beacon"}));
+$("#waFoot").addEventListener("click",()=>track("chat_whatsapp_click",{location:"footer"}));
+
+// which sections people actually scroll to (once per visit)
+const seen=new Set();
+const so=new IntersectionObserver(es=>es.forEach(e=>{const id=e.target.id;
+  if(e.isIntersecting&&!seen.has(id)){seen.add(id); so.unobserve(e.target); track("section_view",{section:id})}}),{threshold:0.4});
+["menu","preorder","pickup","contact"].forEach(id=>{const el=document.getElementById(id); el&&so.observe(el)});
 
 // nav highlight
 const links=[...document.querySelectorAll("nav a")];
