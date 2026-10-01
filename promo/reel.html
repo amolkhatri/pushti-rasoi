@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pushti Rasoi · Reel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Caveat:wght@600;700&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 1080×1920 Instagram Reel, 15 s. Every animation is seeked by render.mjs, so all timing lives in CSS delays (--d, seconds). */
+:root{--bg:#FBF3E9;--card:#FFFBF5;--ink:#3A2418;--muted:#7A6356;--choc:#5A2E1B;--deep:#3E1E11;--pink:#F8E1DC;--sage:#EBEEDD;--red:#C91F24;--on:#FFF6EA}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
+body{font-family:Mukta,system-ui,sans-serif;color:var(--ink)}
+.stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:radial-gradient(1200px 900px at 50% 40%,#FFF8EE,var(--bg))}
+.serif{font-family:"DM Serif Display",Georgia,serif;font-weight:400}
+.script{font-family:Caveat,cursive;font-weight:700}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  animation:sceneIn .45s ease-out calc(var(--in)*1s) both, sceneOut .4s ease-in calc(var(--out)*1s) forwards}
+.scene.last{animation:sceneIn .5s ease-out calc(var(--in)*1s) both}
+@keyframes sceneIn{from{opacity:0}to{opacity:1}}
+@keyframes sceneOut{to{opacity:0;transform:translateY(-60px) scale(.98)}}
+
+/* reusable entrances */
+.pop{animation:pop .7s cubic-bezier(.2,1.5,.4,1) calc(var(--d)*1s) both}
+.rise{animation:rise .7s cubic-bezier(.2,.8,.2,1) calc(var(--d)*1s) both}
+.fade{animation:fade .6s ease-out calc(var(--d)*1s) both}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(-6deg)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(70px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* CSS coin cookies (same recipe as the website menu) */
+.coin{position:absolute;border-radius:50%;background:var(--dough);
+  box-shadow:inset 0 -10px 0 rgba(0,0,0,.16),inset 0 7px 0 rgba(255,255,255,.18),0 18px 26px rgba(70,35,20,.25)}
+.coin i{position:absolute;width:14%;aspect-ratio:1;border-radius:40%;background:var(--chip)}
+.coin i:nth-child(1){left:22%;top:22%}.coin i:nth-child(2){left:58%;top:26%}.coin i:nth-child(3){left:36%;top:52%}.coin i:nth-child(4){left:66%;top:60%}.coin i:nth-child(5){left:24%;top:68%}
+.classic{--dough:#C98A4B}
+.choc{--dough:#5A3422;--chip:#2A140C}
+.cc{--dough:#E9D6B8;--chip:#2F2624}
+.marble{--dough:conic-gradient(from 40deg,#E2B06E 0 25%,#5A3422 0 40%,#E2B06E 0 70%,#5A3422 0 82%,#E2B06E 0)}
+
+/* ---------- Scene 1: cookies rain in, title ---------- */
+.s1 .fall{animation:fall 1.1s cubic-bezier(.3,1.25,.5,1) calc(var(--d)*1s) both, bob 3s ease-in-out calc(var(--d)*1s + 1.1s) infinite alternate}
+@keyframes fall{from{transform:translateY(-1400px) rotate(-220deg)}to{transform:translateY(0) rotate(var(--r,0deg))}}
+@keyframes bob{from{translate:0 0}to{translate:0 -14px}}
+.s1 .kicker{font-size:110px;color:var(--choc);line-height:1}
+.s1 h1{font-size:268px;line-height:.9;color:var(--choc);letter-spacing:-4px}
+.s1 .sub{font-size:52px;font-weight:600;margin-top:24px}
+.s1 .tag{margin-top:34px;font-size:40px;font-weight:600;color:var(--on);background:var(--choc);padding:14px 40px 10px;border-radius:999px}
+
+/* ---------- Scene 2: eggless + ingredients ---------- */
+.s2{background:var(--pink)}
+.s2 .big{font-size:250px;line-height:.85;color:var(--red)}
+.s2 .eg{font-size:150px;line-height:1;color:var(--choc);margin-bottom:70px}
+.chips{display:flex;flex-direction:column;gap:26px;align-items:stretch;width:820px}
+.chip{display:flex;align-items:center;gap:28px;background:var(--card);border-radius:999px;padding:24px 40px 20px 26px;font-size:50px;font-weight:600;text-align:left;
+  box-shadow:0 12px 24px rgba(90,46,27,.12)}
+.chip b{flex:none;width:72px;height:72px;border-radius:50%;background:var(--choc);display:grid;place-items:center}
+.chip svg{width:40px;height:40px;color:var(--on)}
+.chip.no b{background:var(--red)}
+
+/* ---------- Scene 3: flavours ---------- */
+.s3 h2{font-size:120px;color:var(--choc);line-height:1}
+.s3 .hint{font-size:40px;color:var(--muted);margin:10px 0 40px;letter-spacing:.03em}
+.grid{display:grid;grid-template-columns:repeat(2,440px);gap:26px}
+.card{background:var(--card);border:2px solid #EADBCB;border-radius:36px;padding:24px 24px 22px;text-align:left;box-shadow:0 14px 28px rgba(90,46,27,.10)}
+.tile{position:relative;height:200px;border-radius:26px;background:var(--pink);display:grid;place-items:center;overflow:hidden}
+.tile .coin{position:relative;width:140px;height:140px}
+.tile img{width:185px;height:185px;object-fit:contain;filter:drop-shadow(0 14px 16px rgba(70,35,20,.25))}
+.card h3{font-size:46px;margin:16px 4px 0;line-height:1.05;color:var(--ink)}
+.card .p{font-size:40px;font-weight:700;color:var(--choc);margin:2px 4px 0}
+
+/* ---------- Scene 4: bowl + location ---------- */
+.s4{background:var(--sage)}
+.s4 .bowl{width:820px;height:820px;filter:drop-shadow(0 40px 46px rgba(70,35,20,.32));animation:pop .9s cubic-bezier(.2,1.3,.4,1) calc(var(--d)*1s) both, spin 14s linear calc(var(--d)*1s) infinite}
+@keyframes spin{to{rotate:360deg}}
+.s4 .note{font-size:96px;color:var(--choc);line-height:1;margin-top:40px}
+.s4 .loc{display:flex;align-items:center;gap:16px;margin-top:34px;font-size:54px;font-weight:700;color:var(--deep)}
+.s4 .loc svg{width:58px;height:58px;color:var(--red)}
+
+/* ---------- Scene 5: end card ---------- */
+.s5{background:var(--deep);color:var(--on)}
+.s5 .logo{width:300px;height:300px;border-radius:50%;box-shadow:0 0 0 14px rgba(255,246,234,.12)}
+.s5 .name{font-size:150px;line-height:1;margin-top:40px}
+.s5 .tagline{font-size:42px;letter-spacing:.18em;text-transform:uppercase;opacity:.75;margin-top:16px}
+.s5 .cta{margin-top:90px;font-size:62px;font-weight:600}
+.s5 .url{margin-top:26px;font-size:84px;font-weight:700;background:var(--on);color:var(--deep);padding:22px 64px 14px;border-radius:999px;
+  animation:pop .7s cubic-bezier(.2,1.5,.4,1) calc(var(--d)*1s) both, pulse 1.2s ease-in-out calc(var(--d)*1s + .7s) infinite}
+@keyframes pulse{50%{scale:1.06}}
+.s5 .wa{display:flex;align-items:center;gap:16px;margin-top:40px;font-size:46px;opacity:.9}
+.s5 .wa svg{width:56px;height:56px}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- Scene 1 · 0 – 3.2 s -->
+  <section class="scene s1" style="--in:0;--out:3">
+    <div class="coin classic fall" style="--d:.05;--r:12deg;width:170px;height:170px;left:70px;top:250px"></div>
+    <div class="coin choc fall" style="--d:.2;--r:-20deg;width:210px;height:210px;left:800px;top:300px"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="coin marble fall" style="--d:.35;--r:30deg;width:150px;height:150px;left:860px;top:1380px"></div>
+    <div class="coin cc fall" style="--d:.15;--r:-8deg;width:190px;height:190px;left:90px;top:1420px"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="coin classic fall" style="--d:.45;--r:-30deg;width:120px;height:120px;left:300px;top:1600px"></div>
+    <div class="coin choc fall" style="--d:.55;--r:40deg;width:130px;height:130px;left:640px;top:1610px"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="coin marble fall" style="--d:.3;--r:-14deg;width:110px;height:110px;left:500px;top:220px"></div>
+
+    <p class="kicker script rise" style="--d:.5">Homemade ♡</p>
+    <h1 class="serif pop" style="--d:.75">Cookies</h1>
+    <p class="sub rise" style="--d:1.25">Freshly baked · With love</p>
+    <p class="tag pop" style="--d:1.7">Nanded City, Pune</p>
+  </section>
+
+  <!-- Scene 2 · 3.2 – 6.9 s -->
+  <section class="scene s2" style="--in:3.2;--out:6.6">
+    <p class="big serif pop" style="--d:3.4">100%</p>
+    <p class="eg serif rise" style="--d:3.65">Eggless</p>
+    <div class="chips">
+      <p class="chip rise" style="--d:4.1"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></b>Whole wheat + almond flour</p>
+      <p class="chip rise" style="--d:4.5"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></b>Pure cow ghee</p>
+      <p class="chip rise" style="--d:4.9"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></b>Sweetened with jaggery</p>
+      <p class="chip no rise" style="--d:5.3"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></b>No maida · No refined sugar</p>
+    </div>
+  </section>
+
+  <!-- Scene 3 · 6.9 – 10.7 s -->
+  <section class="scene s3" style="--in:6.9;--out:10.4">
+    <h2 class="script rise" style="--d:7">Our Cookie Series</h2>
+    <p class="hint fade" style="--d:7.3">Six flavours · baked to order</p>
+    <div class="grid">
+      <div class="card pop" style="--d:7.45"><div class="tile"><div class="coin classic"></div></div><h3 class="serif">Classic</h3><p class="p">₹299</p></div>
+      <div class="card pop" style="--d:7.6"><div class="tile"><img src="assets/vcc.webp" alt=""></div><h3 class="serif">Vanilla Choco Chip</h3><p class="p">₹349</p></div>
+      <div class="card pop" style="--d:7.75"><div class="tile"><div class="coin marble"></div></div><h3 class="serif">Marble</h3><p class="p">₹349</p></div>
+      <div class="card pop" style="--d:7.9"><div class="tile"><div class="coin choc"><i></i><i></i><i></i><i></i><i></i></div></div><h3 class="serif">Chocolate</h3><p class="p">₹399</p></div>
+      <div class="card pop" style="--d:8.05"><div class="tile"><img src="assets/rv.webp" alt=""></div><h3 class="serif">Red Velvet</h3><p class="p">₹399</p></div>
+      <div class="card pop" style="--d:8.2"><div class="tile"><div class="coin cc"><i></i><i></i><i></i><i></i><i></i></div></div><h3 class="serif">Cookies &amp; Cream</h3><p class="p">₹399</p></div>
+    </div>
+  </section>
+
+  <!-- Scene 4 · 10.7 – 12.9 s -->
+  <section class="scene s4" style="--in:10.7;--out:12.6">
+    <img class="bowl" src="assets/bowl.webp" alt="" style="--d:10.75">
+    <p class="note script rise" style="--d:11.15">Small batch, big love ♡</p>
+    <p class="loc rise" style="--d:11.45"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s-7.5-6.4-7.5-12.2A7.5 7.5 0 0 1 19.5 9.8C19.5 15.6 12 22 12 22zm0-9.4a2.8 2.8 0 1 0 0-5.6 2.8 2.8 0 0 0 0 5.6z"/></svg>Fresh from our kitchen in Nanded City</p>
+  </section>
+
+  <!-- Scene 5 · 12.9 – 15 s -->
+  <section class="scene s5 last" style="--in:12.9">
+    <img class="logo pop" src="assets/logo.png" alt="" style="--d:13">
+    <p class="name serif rise" style="--d:13.25">Pushti Rasoi</p>
+    <p class="tagline fade" style="--d:13.5">Good food · Healthy living</p>
+    <p class="cta rise" style="--d:13.7">Pre-order now at</p>
+    <p class="url" style="--d:13.9">pushtirasoi.in</p>
+    <p class="wa fade" style="--d:14.2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.5.3.1.2.1.6-.1 1.1z"/></svg>Order on WhatsApp</p>
+  </section>
+
+</div>
+</body>
+</html>
