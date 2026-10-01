@@ -138,6 +138,15 @@ footer a.btn.line{border-color:#F6E9DC;color:#F6E9DC}
 .bar .t span{display:block;font-size:14px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar{transition:none}}
 </style>
+<script>
+/* Google Analytics 4: paste your Measurement ID, e.g. "G-ABC123XYZ". Leave empty to disable. */
+const GA_ID = "G-FCVLF370Z7";
+window.dataLayer=window.dataLayer||[]; function gtag(){dataLayer.push(arguments)}
+if(GA_ID){
+  const s=document.createElement("script"); s.async=true; s.src="https://www.googletagmanager.com/gtag/js?id="+GA_ID; document.head.appendChild(s);
+  gtag("js",new Date()); gtag("config",GA_ID);
+}
+</script>
 </head>
 <body>
 
@@ -274,7 +283,8 @@ FLAVOURS.forEach(f=>{
     <div class="row"><span class="price">₹${f.price}</span>
     <span class="step zero" id="s-${f.id}"><button class="minus" type="button" aria-label="Remove one ${f.name}">−</button><output>0</output><button class="plus" type="button" aria-label="Add one ${f.name} pack">+</button></span></div>`;
   el.querySelector("h3").textContent=f.name; el.querySelector(".d").textContent=f.d+" · 250 g";
-  el.querySelector(".plus").onclick=()=>{qty[f.id]=Math.min(20,qty[f.id]+1);render()};
+  el.querySelector(".plus").onclick=()=>{qty[f.id]=Math.min(20,qty[f.id]+1);render();
+    gtag("event","add_to_cart",{currency:"INR",value:f.price,items:[{item_id:f.id,item_name:f.name,price:f.price,quantity:1}]})};
   el.querySelector(".minus").onclick=()=>{qty[f.id]=Math.max(0,qty[f.id]-1);render()};
   grid.appendChild(el);
 });
@@ -316,7 +326,11 @@ function render(){
   $("#send").href = p ? "#" : `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message())}`;
   $("#err").textContent="";
 }
-$("#send").addEventListener("click",e=>{const p=problem(); if(p){e.preventDefault(); $("#err").textContent=p;}});
+$("#send").addEventListener("click",e=>{const p=problem(); if(p){e.preventDefault(); $("#err").textContent=p; return;}
+  const items=FLAVOURS.filter(f=>qty[f.id]).map(f=>({item_id:f.id,item_name:f.name,price:f.price,quantity:qty[f.id]}));
+  gtag("event","generate_lead",{currency:"INR",value:items.reduce((t,i)=>t+i.price*i.quantity,0),delivery:mode(),items,transport_type:"beacon"});
+});
+$("#waFoot").addEventListener("click",()=>gtag("event","contact",{method:"whatsapp",transport_type:"beacon"}));
 
 // nav highlight
 const links=[...document.querySelectorAll("nav a")];
