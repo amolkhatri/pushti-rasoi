@@ -1,2 +1,5 @@
 node_modules/
 frames/
+promo/previews/
+.DS_Store
+__pycache__/
