@@ -2,7 +2,7 @@
 // Usage: cd promo && npm install && node render.mjs
 import { chromium } from "playwright-core";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -40,7 +40,10 @@ for (let f = 0; f < FPS * SECONDS; f++) {
 }
 await browser.close();
 
+// Background music comes from assets/music.wav (generate it with: python3 music.py).
+const music = path.join(dir, "assets", "music.wav");
 execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", String(FPS), "-i", path.join(frames, "%04d.jpg"),
+  ...(existsSync(music) ? ["-i", music, "-af", "loudnorm=I=-14:TP=-1.5:LRA=7", "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-shortest"] : []),
   "-c:v", "libx264", "-profile:v", "high", "-crf", "18", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
   path.join(dir, "pushti-rasoi-reel.mp4")], { stdio: "inherit" });
 rmSync(frames, { recursive: true, force: true });
